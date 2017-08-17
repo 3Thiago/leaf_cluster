@@ -1,7 +1,7 @@
 package network
 
 import (
-	"github.com/name5566/leaf/log"
+	"github.com/zsai001/leaf_cluster/log"
 	"net"
 	"sync"
 	"time"
@@ -54,7 +54,7 @@ func (server *TCPServer) init() {
 
 	// msg parser
 	msgParser := NewMsgParser()
-	msgParser.SetMsgLen(server.LenMsgLen, server.MinMsgLen, server.MaxMsgLen)
+	msgParser.SetMsgLen(server.MinMsgLen, server.MaxMsgLen)
 	msgParser.SetByteOrder(server.LittleEndian)
 	server.msgParser = msgParser
 }

@@ -1,7 +1,7 @@
 package log_test
 
 import (
-	"github.com/name5566/leaf/log"
+	"github.com/zsai001/leaf_cluster/log"
 	l "log"
 )
 
