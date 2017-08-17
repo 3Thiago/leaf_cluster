@@ -1,6 +1,6 @@
 Leaf_Cluster
 ===
-a **experimental** game server base on leaf with cluster support
+a **experimental** game server base on leaf with cluster support, the code has not been completed yet.
 
 Leaf
 -----
