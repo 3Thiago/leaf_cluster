@@ -521,3 +521,12 @@ func init() {
 ---------------
 
 阅读 Wiki 获取更多的帮助：[https://github.com/zsai001/leaf_cluster/wiki](https://github.com/zsai001/leaf_cluster/wiki)
+
+
+## Leaf_cluster 
+
+快速上手：
+
+1. go get github.com/zsai001/leaf_cluster
+2. cd $GOPATH/src/github.com/zsai001/leaf_cluster/demos/server && go run main.go
+

@@ -5,6 +5,8 @@ import (
 	"net"
 	"sync"
 	"time"
+	"io"
+	"github.com/pkg/errors"
 )
 
 type TCPServer struct {
@@ -59,6 +61,28 @@ func (server *TCPServer) init() {
 	server.msgParser = msgParser
 }
 
+func (server *TCPServer) shakeHand(conn net.Conn) error {
+	check := []byte("LeafNo.1")
+	data := make([]byte, len(check))
+	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+	_, err := io.ReadAtLeast(conn, data, len(check))
+	if err != nil {
+		return err
+	}
+	if string(data) != string(check) {
+		return errors.New("shake hand failed with invalid check data")
+	}
+	conn.SetWriteDeadline(time.Now().Add(1 * time.Second))
+	size, err := conn.Write(check)
+	if err != nil {
+		return err
+	}
+	if size != len(data) {
+		return errors.New("shake hand failed with unable send full data size")
+	}
+	return nil
+}
+
 func (server *TCPServer) run() {
 	server.wgLn.Add(1)
 	defer server.wgLn.Done()
@@ -84,6 +108,12 @@ func (server *TCPServer) run() {
 		}
 		tempDelay = 0
 
+		err = server.shakeHand(conn)
+		if err != nil {
+			conn.Close()
+			continue
+		}
+
 		server.mutexConns.Lock()
 		if len(server.conns) >= server.MaxConnNum {
 			server.mutexConns.Unlock()
@@ -91,6 +121,7 @@ func (server *TCPServer) run() {
 			log.Debug("too many connections")
 			continue
 		}
+
 		server.conns[conn] = struct{}{}
 		server.mutexConns.Unlock()
 

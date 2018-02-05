@@ -5,6 +5,8 @@ import (
 	"net"
 	"sync"
 	"time"
+	"github.com/pkg/errors"
+	"io"
 )
 
 type TCPClient struct {
@@ -73,13 +75,40 @@ func (client *TCPClient) dial() net.Conn {
 	for {
 		conn, err := net.Dial("tcp", client.Addr)
 		if err == nil || client.closeFlag {
-			return conn
+			err = client.shakeHand(conn)
+			if err != nil {
+				conn.Close()
+			}else {
+				return conn
+			}
 		}
 
 		log.Release("connect to %v error: %v", client.Addr, err)
 		time.Sleep(client.ConnectInterval)
 		continue
 	}
+}
+
+func (client *TCPClient) shakeHand(conn net.Conn) error {
+	check := []byte("LeafNO.1")
+	conn.SetWriteDeadline(time.Now().Add(1 * time.Second))
+	size, err := conn.Write(check)
+	if err != nil {
+		return err
+	}
+	if size != len(check) {
+		return errors.New("unable to send full check data size")
+	}
+	data := make([]byte, len(check))
+	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+	_, err = io.ReadAtLeast(conn, data, len(check))
+	if err != nil {
+		return err
+	}
+	if string(data) != string(check) {
+		return errors.New("check data not match")
+	}
+	return nil
 }
 
 func (client *TCPClient) connect() {
